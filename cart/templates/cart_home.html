@@ -1,0 +1,138 @@
+
+
+        {% extends "base.html" %}
+
+        <!-- Navigation-->
+    
+        <!-- Header-->
+        {% block content %}
+        <header class="bg-dark py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bolder">Cart Page</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">With this shop hompeage template</p>
+                </div>
+            </div>
+        </header>
+                  
+{% if cart_products %}
+{% for prod in cart_products%}
+
+<div class="container">
+    <div class="row">
+        <center>
+            <div class="col-8">
+                <div class="card mb-3" style="max-width: 540px;">
+                    <div class="row g-0">
+                      <div class="col-md-4">
+                        <img src="{{prod.image.url}}" class="img-fluid rounded-start" alt="Img">
+                      </div>
+
+                      <div class="col-md-8">
+                        <div class="card-body">
+                          <h5 class="card-title">{{prod.name}}</h5>
+                          <span class="text-muted text-decoration-line-through">${{prod.price}}</span>
+                          ${{prod.sale_price}}
+                          <p class="card-text">{{prod.description}}</p>
+                          <div class="row justify-content-center">
+                            <div class="col-md-2">Quantity:</div>
+                            <div class="col-md-2">
+                            <!--the id is so so we can tell which product were slecting to update-->
+                              <select  class="form-select form-select-sm" id="select{{prod.id}}">
+                                 {% for key, value in quantities.items  %}
+                                  {% if key == prod.id|slugify %}
+                                  <option selected>     {{value}}</option> 
+                                  {% endif %}
+                                  
+                                  {% endfor %}    
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                              </select>
+                            </div>
+                          </div>
+                        </div><!--Cuz we want to see quantity we choose here-->
+                        <a class="btn btn-secondary" href="{% url "home" %}">Home</a>
+                        <!--We could choose to trigger the ajax using the id or the class-->
+                       <button type="button" data-index="{{prod.id}}" class="btn btn-secondary update-cart">Update</button>
+                       <button type="button" data-index="{{prod.id}}" class="btn btn-danger delete-product">Remove</button>
+                          <p class="card-text"><small class="text-body-secondary">Added to cart</small></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+            </div>
+        </center>
+    </div>
+</div>
+
+{% endfor %}
+<div align="right">
+  <h3>Total:{{totals}}</h3>
+<a href="{% url "checkout" %}" class="btn btn-success">
+  Checkout
+</a>
+</div>
+<br><br><br><br><br>
+{% else %}
+<br><br><br><br><br><br><br><br>
+
+<div class="container">
+    Nothing in cart yet...
+</div>
+<br><br><br><br><br><br><br><br>
+{% endif %}
+
+<script>
+  $(document).on('click', '.update-cart' , function(e){
+  e.preventDefault();
+  var productId=$(this).data('index');//grabbing the index
+  var selectedQuantity = $("#select" + productId).val(); // Changed this line
+  
+  $.ajax({//whenever we click ythe btn itll send tp cart_add
+  type:"POST",
+  url:"{% url "cart_qty_update" %}",
+  data:{
+  product_id:$(this).data('index'),
+  product_qty:selectedQuantity,
+  csrfmiddlewaretoken:"{{csrf_token}}",
+  action:"post"
+  },
+  success: function(json){
+  
+  //  console.log(json)
+  //   document.getElementById('cart_quantity').text_content=json.qty
+  location.reload();
+  
+  },
+  error: function(xhr, errmsg,err){}
+  });
+  })
+  //delete item
+  $(document).on('click', '.delete-product' , function(e){
+  e.preventDefault();
+  var productId=$(this).data('index');//grabbing the index
+  console.log("yay");
+  $.ajax({//whenever we click ythe btn itll send tp cart_add
+  type:"POST",
+  url:"{% url "cart_delete" %}",
+  data:{
+  product_id: productId,
+  
+  csrfmiddlewaretoken:"{{csrf_token}}",
+  action:"post"
+  },
+  success: function(json){
+  //  //  console.log(json)
+  //    document.getElementById('cart_quantity').//text_content=json.qty
+  location.reload();
+  },
+  error: function(xhr, errmsg,err){}
+  });
+  })
+  </script>   
+
+        {% endblock content %}
+        <!-- Footer-->

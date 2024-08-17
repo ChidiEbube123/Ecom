@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <center>
+            <div class="col-8">
+                <div class="card mb-3" style="max-width: 540px;">
+                    <div class="row g-0">
+                      <div class="col-md-4">
+                        <img src="{{prod.image.url}}" class="img-fluid rounded-start" alt="Img">
+                      </div>
+
+                      <div class="col-md-8">
+                        <div class="card-body">
+                          <h5 class="card-title">{{prod.name}}</h5>
+                          <p class="card-text">{{prod.description}}</p>
+                          {% if prod.is_sale %}
+                          <div class="d-flex justify-content-center small text-warning mb-2">
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                            <div class="bi-star-fill"></div>
+                        </div>
+                        <!-- Product price-->
+                        <span class="text-muted text-decoration-line-through">${{prod.price}}</span>
+                      ${{prod.sale_price}}
+                      <div class="row justify-content-center">
+                        <div class="col-md-2">Quantity:</div>
+                        <div class="col-md-2">
+                          <select  class="form-select form-select-sm" id="qty-cart">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                    {% else %}
+                    <div class="badge bg-dark text-white position-absolute " style="top: 0.5rem; right: 0.5rem">Out of stock</div>
+
+                          {% endif %}
+                        <a class="btn btn-secondary" href="{% url "home" %}">Home</a>
+                        <button type="button" id="add-cart"  value ={{prod.id}} class="btn btn-secondary">Add to cart</button>
+                          <p class="card-text"><small class="text-body-secondary">Last updated 3 mins ago</small></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+            </div>
+        </center>
+    </div>
+</div>
+    <!--send sth to backend without refreshing-->
+
+<script>
+  $(document).on('click', '#add-cart' , function(e){
+    e.preventDefault();
+    $.ajax({//whenever we click ythe btn itll send tp cart_add
+      type:"POST",
+      url:"{% url "cart_add" %}",
+      data:{
+        product_id: $("#add-cart").val(),
+        product_qty:$("#qty-cart option:selected").text(),
+        csrfmiddlewaretoken:"{{csrf_token}}",
+        action:"post"
+      },
+      success: function(json){
+      //  console.log(json)
+      document.getElementById('cart_quantity').text_content=json.qty
+      location.reload();
+      },
+      error: function(xhr, errmsg,err){}
+    });
+  })
+</script>
+{% endblock content %}
